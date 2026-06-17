@@ -67,54 +67,12 @@
             <!-- City Filter Card -->
             <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-2xl border border-orange-100/80 shadow-sm">
                 <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <i class="fa-solid fa-map-pin text-orange-600"></i> Select Town / District (Nagaraya)
+                    <i class="fa-solid fa-search text-orange-600"></i> Search Town / City (Nagaraya)
                 </label>
-                <select id="filterCity" class="w-full p-3.5 border border-orange-200 bg-white rounded-xl text-slate-800 font-bold outline-none focus:ring-2 focus:ring-orange-500 shadow-sm transition-all text-sm">
-                    <option value="All">🗺️ All Sri Lanka (Mulu Lankawama)</option>
-                    <optgroup label="Western Province">
-                        <option value="Colombo">Colombo (Kolamba)</option>
-                        <option value="Gampaha">Gampaha</option>
-                        <option value="Kalutara">Kalutara</option>
-                    </optgroup>
-                    <optgroup label="Central Province">
-                        <option value="Kandy">Kandy (Mahanuwara)</option>
-                        <option value="Matale">Matale</option>
-                        <option value="NuwaraEliya">Nuwara Eliya</option>
-                    </optgroup>
-                    <optgroup label="Southern Province">
-                        <option value="Galle">Galle (Galla)</option>
-                        <option value="Matara">Matara</option>
-                        <option value="Hambantota">Hambantota</option>
-                    </optgroup>
-                    <optgroup label="North Central Province">
-                        <option value="Anuradhapura">Anuradhapura (Special)</option>
-                        <option value="Polonnaruwa">Polonnaruwa</option>
-                    </optgroup>
-                    <optgroup label="North Western Province">
-                        <option value="Kurunegala">Kurunegala</option>
-                        <option value="Puttalam">Puttalam</option>
-                    </optgroup>
-                    <optgroup label="Sabaragamuwa Province">
-                        <option value="Ratnapura">Ratnapura</option>
-                        <option value="Kegalle">Kegalle</option>
-                    </optgroup>
-                    <optgroup label="Uva Province">
-                        <option value="Badulla">Badulla</option>
-                        <option value="Moneragala">Moneragala</option>
-                    </optgroup>
-                    <optgroup label="Eastern Province">
-                        <option value="Trincomalee">Trincomalee</option>
-                        <option value="Batticaloa">Batticaloa</option>
-                        <option value="Ampara">Ampara</option>
-                    </optgroup>
-                    <optgroup label="Northern Province">
-                        <option value="Jaffna">Jaffna</option>
-                        <option value="Kilinochchi">Kilinochchi</option>
-                        <option value="Mannar">Mannar</option>
-                        <option value="Vavuniya">Vavuniya</option>
-                        <option value="Mullaitivu">Mullaitivu</option>
-                    </optgroup>
-                </select>
+                <div class="relative">
+                    <input type="text" id="searchCity" placeholder="Eg: Nittambuwa, Pasyala, Gampaha..." class="w-full p-3.5 pl-10 border border-orange-200 bg-white rounded-xl text-slate-800 font-bold outline-none focus:ring-2 focus:ring-orange-500 shadow-sm transition-all text-sm">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-4 text-orange-400"></i>
+                </div>
             </div>
             
             <!-- Type Filters -->
@@ -178,34 +136,8 @@
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nagaraya (City)</label>
-                        <select id="dCity" class="w-full p-3.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white shadow-sm transition-all font-medium">
-                            <option value="Colombo">Colombo</option>
-                            <option value="Gampaha">Gampaha</option>
-                            <option value="Kalutara">Kalutara</option>
-                            <option value="Kandy">Kandy</option>
-                            <option value="Matale">Matale</option>
-                            <option value="NuwaraEliya">Nuwara Eliya</option>
-                            <option value="Galle">Galle</option>
-                            <option value="Matara">Matara</option>
-                            <option value="Hambantota">Hambantota</option>
-                            <option value="Anuradhapura">Anuradhapura</option>
-                            <option value="Polonnaruwa">Polonnaruwa</option>
-                            <option value="Kurunegala">Kurunegala</option>
-                            <option value="Puttalam">Puttalam</option>
-                            <option value="Ratnapura">Ratnapura</option>
-                            <option value="Kegalle">Kegalle</option>
-                            <option value="Badulla">Badulla</option>
-                            <option value="Moneragala">Moneragala</option>
-                            <option value="Trincomalee">Trincomalee</option>
-                            <option value="Batticaloa">Batticaloa</option>
-                            <option value="Ampara">Ampara</option>
-                            <option value="Jaffna">Jaffna</option>
-                            <option value="Kilinochchi">Kilinochchi</option>
-                            <option value="Mannar">Mannar</option>
-                            <option value="Vavuniya">Vavuniya</option>
-                            <option value="Mullaitivu">Mullaitivu</option>
-                        </select>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nagaraya (City) <span class="text-red-500">*</span></label>
+                        <input type="text" id="dCity" placeholder="Eg: Nittambuwa" required class="w-full p-3.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white shadow-sm transition-all font-medium">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Type (Wargaya)</label>
@@ -354,12 +286,16 @@
         }
 
         function renderFilteredDansals() {
-            const selectedCity = document.getElementById('filterCity').value;
+            const searchCityTerm = document.getElementById('searchCity').value.toLowerCase().trim();
             const listContainer = document.getElementById('dansalList');
             viewMarkers.forEach(m => viewMap.removeLayer(m));
             viewMarkers = [];
             listContainer.innerHTML = '';
-            let filtered = allDansalData.filter(d => (selectedCity === 'All' || d.city === selectedCity) && (currentTypeFilter === 'All' || d.type === currentTypeFilter));
+            
+            let filtered = allDansalData.filter(d => 
+                (searchCityTerm === '' || (d.city && d.city.toLowerCase().includes(searchCityTerm))) && 
+                (currentTypeFilter === 'All' || d.type === currentTypeFilter)
+            );
 
             if(filtered.length === 0) {
                 listContainer.innerHTML = `<div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200"><span class="text-3xl block mb-2">🔍</span><p class="text-sm text-slate-500 font-bold">No active dansals found for current filter.</p></div>`;
@@ -387,6 +323,87 @@
 
         document.getElementById('btn-mapTab').addEventListener('click', () => window.switchTab('mapTab'));
         document.getElementById('btn-regTab').addEventListener('click', () => window.switchTab('regTab'));
+
+        // City Search Listener
+        document.getElementById('searchCity').addEventListener('input', renderFilteredDansals);
+
+        // Type Filter Listeners
+        const typeButtons = {
+            'filter-all': 'All',
+            'filter-rice': 'Bath (Rice)',
+            'filter-ice': 'Ice Cream',
+            'filter-drinks': 'Cool Drinks',
+            'filter-kadala': 'Kadala'
+        };
+
+        for (const [btnId, typeVal] of Object.entries(typeButtons)) {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.addEventListener('click', (e) => {
+                    // Update active styles
+                    document.querySelectorAll('.type-filter').forEach(el => {
+                        el.classList.remove('bg-orange-600', 'text-white', 'border-orange-600', 'shadow-md', 'shadow-orange-500/20');
+                        el.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+                    });
+                    e.target.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+                    e.target.classList.add('bg-orange-600', 'text-white', 'border-orange-600', 'shadow-md', 'shadow-orange-500/20');
+                    
+                    currentTypeFilter = typeVal;
+                    renderFilteredDansals();
+                });
+            }
+        }
+
+        // Get My Location Feature (GPS)
+        document.getElementById('btn-getLoc').addEventListener('click', () => {
+            const btn = document.getElementById('btn-getLoc');
+            const originalHTML = btn.innerHTML;
+            
+            if (navigator.geolocation) {
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-base"></i> Hoyanawa... (Wait)';
+                btn.classList.add('opacity-80', 'cursor-not-allowed');
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        newDansalLat = position.coords.latitude; 
+                        newDansalLng = position.coords.longitude;
+                        
+                        regMap.setView([newDansalLat, newDansalLng], 16);
+                        if(regMarkerLayer) regMap.removeLayer(regMarkerLayer);
+                        
+                        const selectedType = document.getElementById('dType').value;
+                        regMarkerLayer = L.marker([newDansalLat, newDansalLng], { icon: createCustomMarkerIcon(selectedType) }).addTo(regMap);
+                        
+                        document.getElementById('locationError').classList.add('hidden');
+                        const coordsText = document.getElementById('selectedCoords');
+                        coordsText.classList.remove('hidden');
+                        coordsText.innerText = `✓ Location Linked! Lat: ${newDansalLat.toFixed(4)}, Lng: ${newDansalLng.toFixed(4)}`;
+                        
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                        showToast("Location captured successfully!");
+                    },
+                    (error) => {
+                        console.error(error);
+                        showToast("Location ganna bari una. Map eke click karanna.", true);
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                showToast("Browser eka location support karanne na.", true);
+            }
+        });
+
+        // Mock Data Filler for Testing
+        document.getElementById('btn-fillMock')?.addEventListener('click', () => {
+            document.getElementById('dName').value = "Test Ice Cream Dansala";
+            document.getElementById('dCity').value = "Nittambuwa";
+            document.getElementById('dType').value = "Ice Cream";
+            document.getElementById('dTime').value = "18:00";
+            showToast("Demo Data Filled!");
+        });
 
         async function setupFirebase() {
             try {
