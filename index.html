@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Poson Dansal Locator 2026</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,197 +12,315 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
     <style>
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .map-container { height: 420px; width: 100%; border-radius: 1.25rem; z-index: 1; }
-        .reg-map-container { height: 280px; width: 100%; border-radius: 1.25rem; z-index: 1; border: 2.5px dashed #f97316; cursor: crosshair;}
-        .tab-active { border-bottom: 3.5px solid #f97316; color: #f97316; font-weight: 800; }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;600;800&family=Poppins:wght@300;500;700;900&display=swap');
         
+        body { 
+            font-family: 'Poppins', 'Noto Sans Sinhala', sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #31111d 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 3D Glassmorphism Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .map-container { 
+            height: 420px; width: 100%; border-radius: 1.5rem; z-index: 1; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            border: 2px solid rgba(249, 115, 22, 0.3);
+        }
+        .reg-map-container { 
+            height: 280px; width: 100%; border-radius: 1.5rem; z-index: 1; 
+            border: 2px dashed #fbbf24; cursor: crosshair;
+        }
+
+        /* Animated Tabs */
+        .tab-btn {
+            position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tab-active { 
+            color: #fbbf24; font-weight: 800; background: rgba(251, 191, 36, 0.1);
+            border-radius: 1rem; transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(251, 191, 36, 0.2);
+        }
+        
+        /* Floating Lanterns Animation */
+        .lantern-container { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+        .lantern {
+            position: absolute; bottom: -100px;
+            width: 30px; height: 40px;
+            background: linear-gradient(180deg, #fcd34d 0%, #ea580c 100%);
+            border-radius: 8px 8px 4px 4px;
+            box-shadow: 0 0 25px 5px rgba(245, 158, 11, 0.6);
+            animation: floatUp var(--duration) ease-in-out infinite;
+            animation-delay: var(--delay);
+            left: var(--left);
+            opacity: 0.8;
+        }
+        .lantern::after {
+            content: ''; position: absolute; bottom: -12px; left: 10px; width: 10px; height: 15px;
+            background: rgba(255,255,255,0.4); clip-path: polygon(0 0, 100% 0, 50% 100%);
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(-5deg) scale(0.8); opacity: 0; }
+            20% { opacity: 0.9; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-120vh) rotate(15deg) scale(1.1); opacity: 0; }
+        }
+
+        /* 3D Button Effects */
+        .btn-3d {
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 var(--shadow-color), 0 10px 20px rgba(0,0,0,0.4);
+        }
+        .btn-3d:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--shadow-color), 0 5px 10px rgba(0,0,0,0.4);
+        }
+
         /* Custom Notification Toast */
         #toast {
-            visibility: hidden; min-width: 320px; max-width: 90%; background-color: #333; color: #fff; text-align: center;
-            border-radius: 16px; padding: 16px; position: fixed; z-index: 9999; left: 50%;
-            transform: translateX(-50%); bottom: 30px; font-size: 13px; font-weight: 600;
-            transition: visibility 0.4s, opacity 0.4s linear; opacity: 0;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            line-height: 1.5;
+            visibility: hidden; min-width: 300px; max-width: 90%; 
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); color: #fff; text-align: center;
+            border-radius: 20px; padding: 16px; position: fixed; z-index: 9999; left: 50%;
+            transform: translate(-50%, 20px); bottom: 30px; font-size: 14px; font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); opacity: 0;
+            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
-        #toast.show { visibility: visible; opacity: 1; }
+        #toast.show { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
 
-        /* Custom scrollbar hiding */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Custom Inputs for Dark Theme */
+        .dark-input {
+            background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.1); color: white;
+        }
+        .dark-input:focus { border-color: #f59e0b; background: rgba(0, 0, 0, 0.4); outline: none; }
+        .dark-input::placeholder { color: rgba(255,255,255,0.4); }
+        select option { background: #1e293b; color: white; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 pb-10">
+<body class="pb-10 relative">
 
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-500 text-white shadow-lg sticky top-0 z-50">
+    <div class="lantern-container">
+        <div class="lantern" style="--left: 10%; --duration: 15s; --delay: 0s;"></div>
+        <div class="lantern" style="--left: 30%; --duration: 18s; --delay: 5s;"></div>
+        <div class="lantern" style="--left: 60%; --duration: 14s; --delay: 2s;"></div>
+        <div class="lantern" style="--left: 85%; --duration: 20s; --delay: 7s;"></div>
+        <div class="lantern" style="--left: 50%; --duration: 16s; --delay: 10s;"></div>
+    </div>
+
+    <header class="glass-card shadow-2xl sticky top-0 z-50 border-b-0 rounded-b-3xl mb-4 mx-2 mt-2">
         <div class="max-w-md mx-auto p-4 flex justify-between items-center">
-            <h1 class="text-xl font-black flex items-center gap-2 tracking-wide">
-                <span>🏮</span> Poson Dansal Map
+            <h1 class="text-xl font-black flex items-center gap-3 tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 drop-shadow-sm">
+                <span class="text-2xl animate-pulse">🏮</span> Poson Map
             </h1>
-            <div id="connectionStatus" class="text-[11px] bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full text-white flex items-center gap-2 font-bold">
-                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" id="statusDot"></span>
+            <div id="connectionStatus" class="text-[11px] bg-black/40 border border-white/10 px-3 py-1.5 rounded-full text-amber-100 flex items-center gap-2 font-bold shadow-inner">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]" id="statusDot"></span>
                 <span id="statusText">Connecting...</span>
             </div>
         </div>
-    </header>
 
-    <!-- Main Content App Wrapper -->
-    <main class="max-w-md mx-auto bg-white min-h-screen shadow-2xl border-x border-slate-100 pb-12">
-        
-        <!-- Tabs -->
-        <div class="flex border-b border-slate-200 sticky top-[60px] bg-white/95 backdrop-blur-md z-40 shadow-sm">
-            <button id="btn-mapTab" class="flex-1 py-4 text-center font-bold text-sm tab-active transition-all duration-200 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-magnifying-glass-location text-base"></i> Find Dansals
+        <!-- Navigation Tabs -->
+        <div class="flex p-2 gap-2 max-w-md mx-auto">
+            <button id="btn-mapTab" class="tab-btn flex-1 py-3 text-center text-sm tab-active flex flex-col items-center justify-center gap-1">
+                <i class="fa-solid fa-map-location-dot text-lg"></i> <span>Find</span>
             </button>
-            <button id="btn-regTab" class="flex-1 py-4 text-center font-bold text-sm text-slate-500 transition-all duration-200 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-circle-plus text-base"></i> Register Dansal
+            <button id="btn-regTab" class="tab-btn flex-1 py-3 text-center text-sm text-slate-400 flex flex-col items-center justify-center gap-1 hover:text-amber-200">
+                <i class="fa-solid fa-hand-holding-heart text-lg"></i> <span>Add</span>
+            </button>
+            <button id="btn-infoTab" class="tab-btn flex-1 py-3 text-center text-sm text-slate-400 flex flex-col items-center justify-center gap-1 hover:text-amber-200">
+                <i class="fa-solid fa-dharmachakra text-lg"></i> <span>Poson</span>
             </button>
         </div>
+    </header>
 
-        <!-- Map Section (Find Dansals Tab) -->
-        <div id="mapTab" class="p-4 space-y-4">
+    <main class="max-w-md mx-auto min-h-screen relative z-10 px-3 pb-12">
+        
+        <!-- ======================= -->
+        <!-- TAB 1: FIND DANSALS MAP -->
+        <!-- ======================= -->
+        <div id="mapTab" class="space-y-5 animate-[fadeIn_0.5s_ease-out]">
             
-            <!-- City Filter Card -->
-            <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-2xl border border-orange-100/80 shadow-sm">
-                <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <i class="fa-solid fa-search text-orange-600"></i> Search Town / City (Nagaraya)
-                </label>
-                <div class="relative">
-                    <input type="text" id="searchCity" placeholder="Eg: Nittambuwa, Pasyala, Gampaha..." class="w-full p-3.5 pl-10 border border-orange-200 bg-white rounded-xl text-slate-800 font-bold outline-none focus:ring-2 focus:ring-orange-500 shadow-sm transition-all text-sm">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-4 text-orange-400"></i>
+            <!-- Filter Section (Glassmorphism) -->
+            <div class="glass-card p-4 rounded-3xl">
+                <div class="relative mb-3">
+                    <input type="text" id="searchCity" placeholder="Nagaraya (Eg: Nittambuwa...)" class="dark-input w-full p-4 pl-12 rounded-2xl font-bold shadow-inner transition-all text-sm">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-amber-500 text-lg"></i>
+                </div>
+                
+                <div class="flex gap-2 overflow-x-auto py-1 scrollbar-hide" id="typeFilters">
+                    <span id="filter-all" class="type-filter bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl whitespace-nowrap shadow-[0_0_15px_rgba(245,158,11,0.4)] cursor-pointer transition-all border border-orange-400">All</span>
+                    <span id="filter-rice" class="type-filter glass-card text-amber-100 text-xs font-bold px-4 py-2.5 rounded-xl whitespace-nowrap cursor-pointer hover:bg-white/10 transition-all">🍚 Bath</span>
+                    <span id="filter-ice" class="type-filter glass-card text-amber-100 text-xs font-bold px-4 py-2.5 rounded-xl whitespace-nowrap cursor-pointer hover:bg-white/10 transition-all">🍦 Ice Cream</span>
+                    <span id="filter-drinks" class="type-filter glass-card text-amber-100 text-xs font-bold px-4 py-2.5 rounded-xl whitespace-nowrap cursor-pointer hover:bg-white/10 transition-all">🍹 Drinks</span>
                 </div>
             </div>
             
-            <!-- Type Filters -->
-            <div class="flex gap-2 overflow-x-auto py-1 scrollbar-hide" id="typeFilters">
-                <span id="filter-all" class="type-filter bg-orange-600 text-white text-xs font-extrabold px-4 py-2.5 rounded-full whitespace-nowrap border border-orange-600 cursor-pointer shadow-md shadow-orange-500/20 transition-all">All Types</span>
-                <span id="filter-rice" class="type-filter bg-white text-slate-700 text-xs font-bold px-4 py-2.5 rounded-full whitespace-nowrap border border-slate-200 cursor-pointer hover:bg-slate-100 transition-all">🍚 Bath (Rice)</span>
-                <span id="filter-ice" class="type-filter bg-white text-slate-700 text-xs font-bold px-4 py-2.5 rounded-full whitespace-nowrap border border-slate-200 cursor-pointer hover:bg-slate-100 transition-all">🍦 Ice Cream</span>
-                <span id="filter-drinks" class="type-filter bg-white text-slate-700 text-xs font-bold px-4 py-2.5 rounded-full whitespace-nowrap border border-slate-200 cursor-pointer hover:bg-slate-100 transition-all">🍹 Cool Drinks</span>
-                <span id="filter-kadala" class="type-filter bg-white text-slate-700 text-xs font-bold px-4 py-2.5 rounded-full whitespace-nowrap border border-slate-200 cursor-pointer hover:bg-slate-100 transition-all">🍲 Kadala / Maniokka</span>
-            </div>
-            
-            <!-- Main View Map -->
-            <div id="mainMap" class="map-container shadow-inner border border-slate-100 relative overflow-hidden">
-                <div id="mapLoading" class="absolute inset-0 bg-white/95 z-[1000] flex flex-col items-center justify-center font-bold text-slate-600 gap-3">
-                    <div class="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span class="text-sm tracking-wide">Loading Interactive Map...</span>
+            <!-- Map Container -->
+            <div class="relative rounded-3xl overflow-hidden p-1 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 shadow-[0_10px_30px_rgba(245,158,11,0.3)]">
+                <div id="mainMap" class="map-container rounded-3xl bg-slate-800"></div>
+                <div id="mapLoading" class="absolute inset-1 bg-slate-900/90 backdrop-blur-md z-[1000] flex flex-col items-center justify-center font-bold text-amber-400 gap-4 rounded-3xl">
+                    <i class="fa-solid fa-dharmachakra fa-spin text-4xl"></i>
+                    <span class="text-sm tracking-widest uppercase">Loading Map...</span>
                 </div>
             </div>
 
-            <!-- List Title with Live Indicator -->
-            <div class="pt-2">
+            <!-- List Section -->
+            <div class="glass-card p-4 rounded-3xl">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-extrabold text-lg text-slate-800 tracking-tight flex items-center gap-2">
-                        📋 Registered Dansals
+                    <h2 class="font-black text-lg text-amber-100 tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-list-ul text-amber-500"></i> Registered List
                     </h2>
-                    <span class="text-[11px] font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full flex items-center gap-1.5 animate-pulse" id="liveTag">
-                        <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> LIVE VIEW
+                    <span class="text-[10px] font-bold text-red-100 bg-red-500/20 border border-red-500/50 px-3 py-1 rounded-full flex items-center gap-1.5 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_5px_white]"></span> LIVE
                     </span>
                 </div>
                 <div id="dansalList" class="space-y-3">
-                    <div class="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                        <span class="text-2xl block mb-2">🔄</span>
-                        <p class="text-sm text-slate-500 font-semibold">Awaiting connection to database...</p>
+                    <div class="text-center py-10 glass-card rounded-2xl border-dashed border-white/20">
+                        <i class="fa-solid fa-satellite-dish text-3xl text-slate-500 mb-3 animate-pulse"></i>
+                        <p class="text-sm text-slate-400 font-semibold">Connecting to Database...</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Register Section (Register Dansal Tab) -->
-        <div id="regTab" class="p-4 hidden space-y-4">
-            <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-2xl border border-orange-100">
-                <h2 class="font-extrabold text-orange-900 text-base mb-1">Add Your Poson Dansala 🏮</h2>
-                <p class="text-xs text-orange-700 leading-relaxed font-medium">Oyage dansale locations daala anith ayata lesiyen hoyaganna udaw karanna. Oyage mobile eke GPS on karala me wede lesiyenma karanna puluwan.</p>
+        <!-- ======================= -->
+        <!-- TAB 2: REGISTER DANSAL -->
+        <!-- ======================= -->
+        <div id="regTab" class="hidden space-y-5 animate-[fadeIn_0.5s_ease-out]">
+            <div class="glass-card p-5 rounded-3xl border-t border-amber-400/30">
+                <h2 class="font-black text-amber-300 text-lg mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-lantern text-orange-500"></i> Add Your Dansala
+                </h2>
+                <p class="text-xs text-slate-300 leading-relaxed font-medium">ඔයාගේ දන්සල Map එකට දාන්න. ඔයා add කරන දන්සල, පස්සේ ඔයාටම List එකෙන් "Delete" කරන්නත් පුළුවන්.</p>
             </div>
 
-            <!-- Interactive Demo Testing Helper Block -->
-            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col items-start justify-between gap-2 shadow-sm">
-                <div class="text-xs text-slate-600 font-bold">
-                    ⚡ <b>Meka Test Karanna Onaida?</b> Click below to auto-fill mock data instantly!
-                </div>
-                <button type="button" id="btn-fillMock" class="text-xs bg-amber-500 hover:bg-amber-600 active:scale-95 text-white px-3 py-2 rounded-lg font-bold transition-all shadow-sm flex items-center gap-1">
-                    ✨ Auto-Fill Demo Data
-                </button>
-            </div>
-
-            <form id="dansalForm" class="space-y-4">
+            <form id="dansalForm" class="glass-card p-5 rounded-3xl space-y-5">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Dansale Nama (Name) <span class="text-red-500">*</span></label>
-                    <input type="text" id="dName" placeholder="Eg: Anuradhapura Ice Cream Dansala" required class="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none text-sm transition-all shadow-sm font-medium">
+                    <label class="block text-[11px] font-bold text-amber-200 uppercase tracking-wider mb-2">Dansale Nama (Name) <span class="text-red-400">*</span></label>
+                    <input type="text" id="dName" placeholder="Eg: Nittambuwa Maha Bath Dansala" required class="dark-input w-full p-4 rounded-xl text-sm font-medium">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nagaraya (City) <span class="text-red-500">*</span></label>
-                        <input type="text" id="dCity" placeholder="Eg: Nittambuwa" required class="w-full p-3.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white shadow-sm transition-all font-medium">
+                        <label class="block text-[11px] font-bold text-amber-200 uppercase tracking-wider mb-2">Nagaraya (City) <span class="text-red-400">*</span></label>
+                        <input type="text" id="dCity" placeholder="Eg: Nittambuwa" required class="dark-input w-full p-4 rounded-xl text-sm font-medium">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Type (Wargaya)</label>
-                        <select id="dType" class="w-full p-3.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white shadow-sm transition-all font-medium">
-                            <option value="Bath (Rice)">Rice (Bath)</option>
-                            <option value="Ice Cream">Ice Cream</option>
-                            <option value="Cool Drinks">Cool Drinks</option>
-                            <option value="Kadala">Kadala / Maniokka</option>
-                            <option value="Other">Other Type</option>
+                        <label class="block text-[11px] font-bold text-amber-200 uppercase tracking-wider mb-2">Type (Wargaya)</label>
+                        <select id="dType" class="dark-input w-full p-4 rounded-xl text-sm font-medium cursor-pointer">
+                            <option value="Bath (Rice)">Rice (Bath) 🍚</option>
+                            <option value="Ice Cream">Ice Cream 🍦</option>
+                            <option value="Cool Drinks">Cool Drinks 🍹</option>
+                            <option value="Kadala">Kadala / Maniokka 🍲</option>
+                            <option value="Other">Other Type 🏮</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Time (Welawa) <span class="text-red-500">*</span></label>
-                        <input type="time" id="dTime" required class="w-full p-3.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm shadow-sm transition-all font-medium">
+                        <label class="block text-[11px] font-bold text-amber-200 uppercase tracking-wider mb-2">Time (Welawa) <span class="text-red-400">*</span></label>
+                        <input type="time" id="dTime" required class="dark-input w-full p-4 rounded-xl text-sm font-medium custom-time-icon">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Status (Thathwaya)</label>
-                        <select id="dStatus" class="w-full p-3.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white shadow-sm transition-all font-medium">
-                            <option value="Starting Soon">Starting Soon</option>
-                            <option value="Available">Available (Ida Atha)</option>
-                            <option value="Crowded">Crowded (Senaga Wadi)</option>
-                            <option value="Finished">Finished (Iwarai)</option>
+                        <label class="block text-[11px] font-bold text-amber-200 uppercase tracking-wider mb-2">Status</label>
+                        <select id="dStatus" class="dark-input w-full p-4 rounded-xl text-sm font-medium cursor-pointer">
+                            <option value="Starting Soon">Starting Soon ⏳</option>
+                            <option value="Available">Available (Ida Atha) ✅</option>
+                            <option value="Crowded">Crowded (Senaga Wadi) ⚠️</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Location Picker Map -->
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Dansala Thiyena Thana (Location) <span class="text-red-500">*</span></label>
-                    <p class="text-[11px] text-slate-500 mb-2 font-medium">Pahatha green color button eka click karala oyage phone/PC GPS eken thaman inna location eka auto pin karanna. Natham map eke manual click karalath pin karanna puluwan.</p>
+                <div class="space-y-3 pt-2">
+                    <label class="block text-[11px] font-bold text-amber-200 uppercase tracking-wider">Location Setup <span class="text-red-400">*</span></label>
                     
-                    <!-- Get My Location Button -->
-                    <button type="button" id="btn-getLoc" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 mb-2 text-sm">
-                        <i class="fa-solid fa-location-crosshairs text-base"></i> 📍 Get My Current Location
+                    <button type="button" id="btn-getLoc" style="--shadow-color: #047857;" class="btn-3d w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-extrabold py-4 px-4 rounded-2xl flex items-center justify-center gap-2 text-sm border border-emerald-400/50">
+                        <i class="fa-solid fa-location-crosshairs text-lg"></i> Auto Detect My Location
                     </button>
 
-                    <div id="regMap" class="reg-map-container bg-slate-100 shadow-inner"></div>
-                    <p id="locationError" class="text-xs text-red-500 font-bold hidden">🛑 Karunakarala map eke click karanna hari "Get My Location" button eka obanna!</p>
-                    <div id="selectedCoords" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 rounded-xl font-mono font-bold hidden">
-                        ✓ Selected Location Linked!
+                    <div class="relative p-1 bg-gradient-to-br from-slate-600 to-slate-800 rounded-2xl mt-3">
+                        <div id="regMap" class="reg-map-container bg-slate-900 rounded-xl"></div>
+                    </div>
+                    
+                    <p id="locationError" class="text-xs text-red-400 font-bold hidden bg-red-900/30 p-2 rounded-lg border border-red-500/30 text-center"><i class="fa-solid fa-triangle-exclamation"></i> Location eka map eken select karanna!</p>
+                    <div id="selectedCoords" class="text-xs bg-emerald-900/40 text-emerald-300 border border-emerald-500/30 p-3 rounded-xl font-mono font-bold hidden text-center">
+                        <i class="fa-solid fa-check-circle"></i> Location Linked Successfully!
                     </div>
                 </div>
 
-                <button type="submit" id="submitBtn" class="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md shadow-orange-500/10 mt-4 text-sm flex items-center justify-center gap-2">
-                    🏮 Save & Register Dansala
+                <button type="submit" id="submitBtn" style="--shadow-color: #b45309;" class="btn-3d w-full bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 text-amber-950 font-black py-4 px-4 rounded-2xl mt-6 text-base uppercase tracking-widest flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Register Dansala
                 </button>
             </form>
         </div>
+
+        <!-- ======================= -->
+        <!-- TAB 3: POSON INFO       -->
+        <!-- ======================= -->
+        <div id="infoTab" class="hidden space-y-5 animate-[fadeIn_0.5s_ease-out]">
+            <div class="glass-card p-6 rounded-3xl relative overflow-hidden text-center">
+                <div class="absolute -top-10 -right-10 opacity-10">
+                    <i class="fa-solid fa-dharmachakra text-9xl"></i>
+                </div>
+                <h2 class="font-black text-2xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-500 mb-4 relative z-10">
+                    පොසොන් උදානය
+                </h2>
+                <div class="w-16 h-1 bg-amber-500/50 mx-auto rounded-full mb-5"></div>
+                <p class="text-sm text-slate-300 leading-relaxed text-justify mb-4">
+                    ශ්‍රී ලාංකික බෞද්ධයින්ට අතිශය වැදගත් වන පොසොන් පුර පසළොස්වක පෝය දිනය, මිහිඳු මහරහතන් වහන්සේ ප්‍රමුඛ ධර්ම දූත පිරිස ලංකාවට වැඩම කර බුදුදහම හඳුන්වා දීම සිහිපත් කරයි.
+                </p>
+                <p class="text-sm text-slate-300 leading-relaxed text-justify mb-6">
+                    මිහින්තලා පව්වේදී දේවානම්පියතිස්ස රජතුමාට චුල්ලහත්ථිපදෝපම සූත්‍රය දේශනා කරමින් ඇරඹි ඒ උතුම් ශාසනික ගමන නිසා ලාංකීය සංස්කෘතිය සම්පූර්ණයෙන්ම නව මගකට යොමු විය.
+                </p>
+                <div class="bg-black/30 p-4 rounded-2xl border border-white/10 flex flex-col gap-3">
+                    <div class="flex items-center gap-3 text-amber-200 text-sm font-bold text-left">
+                        <i class="fa-solid fa-hands-praying text-xl text-amber-500"></i> දන්සල් දීම (දාන පාරමිතාව)
+                    </div>
+                    <p class="text-xs text-slate-400 text-justify">
+                        පොසොන් කාලයට ලංකාව පුරා දන්සල් දීම අපේ උතුම් සිරිතකි. බඩගින්නේ යන කෙනෙකුට ආගම් භේදයකින් තොරව කෑම වේලක් දීම තුළින් විශාල පිනක් මෙන්ම මනුෂ්‍යත්වයද වර්ධනය වේ.
+                    </p>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <!-- Custom Toast Message Component -->
+    <!-- Custom Confirm Dialog for Delete -->
+    <div id="confirmDialog" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4 transition-opacity opacity-0">
+        <div class="bg-slate-800 border border-slate-600 p-6 rounded-3xl shadow-2xl max-w-xs w-full text-center transform scale-90 transition-transform duration-300" id="dialogBox">
+            <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/50 text-red-400">
+                <i class="fa-solid fa-trash-can text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-black text-white mb-2">Delete Dansala?</h3>
+            <p class="text-xs text-slate-400 mb-6 font-medium">ඔයාට විශ්වාසද මේ දන්සල Map එකෙන් අයින් කරන්න ඕනේ කියලා? මේක ආයෙත් ගන්න බෑ.</p>
+            <div class="flex gap-3 justify-center">
+                <button id="btnCancel" class="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl text-sm transition-all">Cancel</button>
+                <button id="btnConfirm" class="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold rounded-xl text-sm shadow-[0_5px_15px_rgba(239,68,68,0.4)] transition-all">Delete It</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Toast Message -->
     <div id="toast">Message goes here</div>
 
-    <!-- Leaflet JS for Map -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Firebase SDK Modules -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Firebase Config (Keep your exact keys)
         const myOwnFirebaseConfig = {
             apiKey: "AIzaSyByzmmLfW3SflXIdv7pM27Ja72ITQK4bM8",
             authDomain: "poson-dansal.firebaseapp.com",
@@ -212,77 +330,73 @@
             appId: "1:930299500096:web:1a1393d826ccb6fb06b1a5"
         };
 
-        const cityCoordinates = {
-            "All": { lat: 7.8731, lng: 80.7718, zoom: 7.5 },
-            "Colombo": { lat: 6.9271, lng: 79.8612, zoom: 12.5 },
-            "Gampaha": { lat: 7.0840, lng: 80.0098, zoom: 12.5 },
-            "Kalutara": { lat: 6.5854, lng: 79.9607, zoom: 12.5 },
-            "Kandy": { lat: 7.2906, lng: 80.6337, zoom: 13 },
-            "Matale": { lat: 7.4675, lng: 80.6234, zoom: 13 },
-            "NuwaraEliya": { lat: 6.9497, lng: 80.7891, zoom: 13 },
-            "Galle": { lat: 6.0328, lng: 80.2168, zoom: 13 },
-            "Matara": { lat: 5.9549, lng: 80.5550, zoom: 13 },
-            "Hambantota": { lat: 6.1246, lng: 81.1185, zoom: 12.5 },
-            "Anuradhapura": { lat: 8.3114, lng: 80.4037, zoom: 13 },
-            "Polonnaruwa": { lat: 7.9403, lng: 81.0188, zoom: 12.5 },
-            "Kurunegala": { lat: 7.4818, lng: 80.3609, zoom: 13 },
-            "Puttalam": { lat: 8.0362, lng: 79.8283, zoom: 12.5 },
-            "Ratnapura": { lat: 6.7056, lng: 80.3847, zoom: 13 },
-            "Kegalle": { lat: 7.2513, lng: 80.3464, zoom: 13 },
-            "Badulla": { lat: 6.9934, lng: 81.0550, zoom: 13 },
-            "Moneragala": { lat: 6.8724, lng: 81.3507, zoom: 12.5 },
-            "Trincomalee": { lat: 8.5873, lng: 81.2152, zoom: 12.5 },
-            "Batticaloa": { lat: 7.7102, lng: 81.6924, zoom: 12.5 },
-            "Ampara": { lat: 7.2955, lng: 81.6747, zoom: 12.5 },
-            "Jaffna": { lat: 9.6615, lng: 80.0255, zoom: 13 },
-            "Kilinochchi": { lat: 9.3803, lng: 80.3983, zoom: 12.5 },
-            "Mannar": { lat: 8.9810, lng: 79.9044, zoom: 13 },
-            "Vavuniya": { lat: 8.7542, lng: 80.4982, zoom: 13 },
-            "Mullaitivu": { lat: 9.2863, lng: 80.8143, zoom: 12.5 }
-        };
+        // State variables
+        let viewMap, regMap, viewMarkers = [], regMarkerLayer = null, allDansalData = [];
+        let currentTypeFilter = 'All', newDansalLat = null, newDansalLng = null;
+        let db, auth, currentUserUid = null;
 
-        let viewMap, regMap, viewMarkers = [], regMarkerLayer = null, allDansalData = [], currentTypeFilter = 'All', newDansalLat = null, newDansalLng = null, db, auth, useLocalMemory = false;
+        // Custom Delete Dialog State
+        let itemToDeleteId = null;
 
-        function showToast(message, isError = false) {
+        // Utility: Toast Notification
+        window.showToast = function(message, isError = false) {
             const toast = document.getElementById("toast");
-            toast.innerText = message;
-            toast.style.backgroundColor = isError ? "#ef4444" : "#10b981";
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 4500);
+            toast.innerHTML = isError ? `<i class="fa-solid fa-circle-exclamation text-red-400 mr-2"></i> ${message}` : `<i class="fa-solid fa-circle-check text-emerald-400 mr-2"></i> ${message}`;
+            toast.style.borderColor = isError ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)";
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 4000);
         }
 
+        // Custom Map Icons
         function createCustomMarkerIcon(type) {
             let color = "#ef4444", emoji = "🏮";
-            if (type === "Bath (Rice)") { color = "#f97316"; emoji = "🍚"; }
-            else if (type === "Ice Cream") { color = "#ec4899"; emoji = "🍦"; }
-            else if (type === "Cool Drinks") { color = "#06b6d4"; emoji = "🍹"; }
-            else if (type === "Kadala") { color = "#eab308"; emoji = "🍲"; }
-            return L.divIcon({ html: `<div class="flex flex-col items-center justify-center"><div class="w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 border-white text-base transform hover:scale-110 transition-all duration-200" style="background-color: ${color};">${emoji}</div><div class="w-3.5 h-3.5 transform rotate-45 -mt-1.5 shadow-md" style="background-color: ${color};"></div></div>`, className: 'custom-div-icon', iconSize: [36, 46], iconAnchor: [18, 46], popupAnchor: [0, -42] });
+            if (type === "Bath (Rice)") { color = "#fbbf24"; emoji = "🍚"; }
+            else if (type === "Ice Cream") { color = "#f472b6"; emoji = "🍦"; }
+            else if (type === "Cool Drinks") { color = "#22d3ee"; emoji = "🍹"; }
+            else if (type === "Kadala") { color = "#d97706"; emoji = "🍲"; }
+            
+            return L.divIcon({ 
+                html: `<div class="relative flex flex-col items-center justify-center group">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] border-2 border-white/80 text-xl transform group-hover:scale-125 transition-all duration-300 relative z-10" style="background-color: ${color};">${emoji}</div>
+                        <div class="w-4 h-4 transform rotate-45 -mt-2 shadow-lg z-0" style="background-color: ${color};"></div>
+                       </div>`, 
+                className: 'custom-div-icon bg-transparent border-0', 
+                iconSize: [40, 50], iconAnchor: [20, 50], popupAnchor: [0, -45] 
+            });
         }
 
         function initViewMap() {
             if(!viewMap) {
-                viewMap = L.map('mainMap', { scrollWheelZoom: true }).setView([7.8731, 80.7718], 7.5);
-                L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=si&gl=LK', { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '© Google Maps' }).addTo(viewMap);
+                // Centered on Sri Lanka, dark theme tile layer config is not officially available on google so we use a filter on the container in CSS, but for map tiles we use the standard Sinhala local one.
+                viewMap = L.map('mainMap', { scrollWheelZoom: true, zoomControl: false }).setView([7.8731, 80.7718], 7.5);
+                L.control.zoom({ position: 'bottomright' }).addTo(viewMap);
+                L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=si&gl=LK', { 
+                    maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '© Google Maps' 
+                }).addTo(viewMap);
                 document.getElementById('mapLoading').style.display = 'none';
             }
         }
 
         function initRegMap() {
             if(!regMap) {
-                regMap = L.map('regMap').setView([6.9271, 79.8612], 12);
-                L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=si&gl=LK', { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '© Google Maps' }).addTo(regMap);
+                regMap = L.map('regMap', { zoomControl: false }).setView([7.8731, 80.7718], 7);
+                L.control.zoom({ position: 'bottomright' }).addTo(regMap);
+                L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=si&gl=LK', { 
+                    maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+                }).addTo(regMap);
+                
                 regMap.on('click', function(e) {
                     newDansalLat = e.latlng.lat; newDansalLng = e.latlng.lng;
                     if(regMarkerLayer) regMap.removeLayer(regMarkerLayer);
                     regMarkerLayer = L.marker([newDansalLat, newDansalLng], { icon: createCustomMarkerIcon(document.getElementById('dType').value) }).addTo(regMap);
+                    
                     document.getElementById('locationError').classList.add('hidden');
                     const coordsText = document.getElementById('selectedCoords');
                     coordsText.classList.remove('hidden');
-                    coordsText.innerText = `✓ Target Selected: Lat ${newDansalLat.toFixed(5)}, Lng ${newDansalLng.toFixed(5)}`;
+                    coordsText.innerHTML = `<i class="fa-solid fa-location-dot"></i> Pin Set: Lat ${newDansalLat.toFixed(4)}, Lng ${newDansalLng.toFixed(4)}`;
                 });
             }
-            setTimeout(() => regMap.invalidateSize(), 250);
+            setTimeout(() => regMap.invalidateSize(), 300);
         }
 
         function renderFilteredDansals() {
@@ -293,116 +407,177 @@
             listContainer.innerHTML = '';
             
             let filtered = allDansalData.filter(d => 
-                (searchCityTerm === '' || (d.city && d.city.toLowerCase().includes(searchCityTerm))) && 
+                (searchCityTerm === '' || (d.city && d.city.toLowerCase().includes(searchCityTerm)) || (d.name && d.name.toLowerCase().includes(searchCityTerm))) && 
                 (currentTypeFilter === 'All' || d.type === currentTypeFilter)
             );
 
             if(filtered.length === 0) {
-                listContainer.innerHTML = `<div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200"><span class="text-3xl block mb-2">🔍</span><p class="text-sm text-slate-500 font-bold">No active dansals found for current filter.</p></div>`;
+                listContainer.innerHTML = `<div class="text-center py-12 glass-card rounded-2xl"><i class="fa-solid fa-ghost text-4xl text-white/20 block mb-3"></i><p class="text-sm text-amber-200/50 font-bold">No dansals found matching your search.</p></div>`;
                 return;
             }
 
             filtered.forEach(d => {
+                // Add Map Marker
                 if(d.lat && d.lng) {
-                    const marker = L.marker([d.lat, d.lng], { icon: createCustomMarkerIcon(d.type) }).addTo(viewMap).bindPopup(`<b class="text-orange-600 text-sm">${d.name}</b><div class="text-xs">⏰ ${d.time}</div>`);
+                    const popupContent = `<div class="bg-slate-800 text-white p-2 rounded-xl border border-slate-600 shadow-xl min-w-[150px]">
+                        <b class="text-amber-400 text-sm block mb-1 border-b border-white/10 pb-1">${d.name}</b>
+                        <div class="text-xs text-slate-300 mb-1"><i class="fa-solid fa-clock text-amber-500 w-4"></i> ${d.time}</div>
+                        <div class="text-xs text-slate-300"><i class="fa-solid fa-location-dot text-amber-500 w-4"></i> ${d.city}</div>
+                        <div class="mt-2 text-[10px] bg-white/10 text-center py-1 rounded-md font-bold">${d.status}</div>
+                    </div>`;
+                    
+                    const marker = L.marker([d.lat, d.lng], { icon: createCustomMarkerIcon(d.type) }).addTo(viewMap)
+                        .bindPopup(popupContent, { className: 'custom-popup', closeButton: false });
                     viewMarkers.push(marker);
                 }
+
+                // Ownership Check for Delete Button
+                const isOwner = (currentUserUid && d.createdBy === currentUserUid);
+                const deleteBtnHtml = isOwner ? 
+                    `<button onclick="triggerDelete('${d.id}')" class="mt-3 w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-bold transition-all"><i class="fa-solid fa-trash-can"></i> Delete My Dansala</button>` 
+                    : '';
+
+                // Create List Card
                 const itemDiv = document.createElement('div');
-                itemDiv.className = "border border-slate-100 p-4 rounded-2xl flex flex-col gap-3 bg-white shadow-sm hover:shadow-md transition-all";
-                itemDiv.innerHTML = `<div class="flex justify-between items-start"><div><h3 class="font-extrabold text-slate-800 text-sm">${d.name}</h3><p class="text-[11px] text-slate-500 font-bold"><i class="fa-solid fa-location-dot"></i> ${d.city}</p></div><span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase border">${d.status}</span></div>`;
-                itemDiv.addEventListener('click', () => { viewMap.setView([d.lat, d.lng], 15); });
+                itemDiv.className = "glass-card p-4 rounded-2xl flex flex-col hover:bg-white/10 transition-all cursor-pointer border border-white/5";
+                itemDiv.innerHTML = `
+                    <div class="flex justify-between items-start mb-2" onclick="focusOnMap(${d.lat}, ${d.lng})">
+                        <div>
+                            <h3 class="font-extrabold text-amber-100 text-sm leading-tight mb-1">${d.name}</h3>
+                            <p class="text-[11px] text-slate-400 font-bold"><i class="fa-solid fa-location-dot text-amber-600/80"></i> ${d.city} • <i class="fa-regular fa-clock text-amber-600/80"></i> ${d.time}</p>
+                        </div>
+                        <span class="text-[9px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider ${d.status==='Available'?'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30':(d.status==='Crowded'?'bg-orange-500/20 text-orange-300 border border-orange-500/30':'bg-slate-500/20 text-slate-300 border border-slate-500/30')}">${d.status}</span>
+                    </div>
+                    ${deleteBtnHtml}
+                `;
                 listContainer.appendChild(itemDiv);
             });
         }
 
+        // Global functions for inline HTML calls
+        window.focusOnMap = function(lat, lng) {
+            if(lat && lng) {
+                viewMap.setView([lat, lng], 14, { animate: true, duration: 1 });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Delete Logic with Custom Dialog
+        const dialogUI = document.getElementById('confirmDialog');
+        const dialogBox = document.getElementById('dialogBox');
+
+        window.triggerDelete = function(docId) {
+            itemToDeleteId = docId;
+            dialogUI.classList.remove('hidden');
+            dialogUI.classList.add('flex');
+            setTimeout(() => {
+                dialogUI.classList.remove('opacity-0');
+                dialogBox.classList.remove('scale-90');
+                dialogBox.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeDialog() {
+            dialogUI.classList.add('opacity-0');
+            dialogBox.classList.remove('scale-100');
+            dialogBox.classList.add('scale-90');
+            setTimeout(() => {
+                dialogUI.classList.add('hidden');
+                dialogUI.classList.remove('flex');
+                itemToDeleteId = null;
+            }, 300);
+        }
+
+        document.getElementById('btnCancel').addEventListener('click', closeDialog);
+        
+        document.getElementById('btnConfirm').addEventListener('click', async () => {
+            if(!itemToDeleteId) return;
+            const btn = document.getElementById('btnConfirm');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            try {
+                await deleteDoc(doc(db, 'dansals', itemToDeleteId));
+                showToast("Dansala deleted successfully!");
+            } catch (e) {
+                console.error(e);
+                showToast("Cannot delete. Only the creator can delete this.", true);
+            }
+            closeDialog();
+            btn.innerHTML = 'Delete It';
+        });
+
         window.switchTab = function(tabId) {
-            document.getElementById('mapTab').classList.add('hidden'); document.getElementById('regTab').classList.add('hidden');
+            ['mapTab', 'regTab', 'infoTab'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
+            
+            // Update Active Tab Styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('tab-active', 'text-amber-200');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add('tab-active', 'text-amber-200');
+
             if(tabId === 'regTab') initRegMap();
         }
 
-        document.getElementById('btn-mapTab').addEventListener('click', () => window.switchTab('mapTab'));
-        document.getElementById('btn-regTab').addEventListener('click', () => window.switchTab('regTab'));
+        document.getElementById('btn-mapTab').addEventListener('click', () => switchTab('mapTab'));
+        document.getElementById('btn-regTab').addEventListener('click', () => switchTab('regTab'));
+        document.getElementById('btn-infoTab').addEventListener('click', () => switchTab('infoTab'));
 
-        // City Search Listener
         document.getElementById('searchCity').addEventListener('input', renderFilteredDansals);
 
-        // Type Filter Listeners
-        const typeButtons = {
-            'filter-all': 'All',
-            'filter-rice': 'Bath (Rice)',
-            'filter-ice': 'Ice Cream',
-            'filter-drinks': 'Cool Drinks',
-            'filter-kadala': 'Kadala'
-        };
-
+        const typeButtons = { 'filter-all': 'All', 'filter-rice': 'Bath (Rice)', 'filter-ice': 'Ice Cream', 'filter-drinks': 'Cool Drinks' };
         for (const [btnId, typeVal] of Object.entries(typeButtons)) {
             const btn = document.getElementById(btnId);
             if (btn) {
                 btn.addEventListener('click', (e) => {
-                    // Update active styles
                     document.querySelectorAll('.type-filter').forEach(el => {
-                        el.classList.remove('bg-orange-600', 'text-white', 'border-orange-600', 'shadow-md', 'shadow-orange-500/20');
-                        el.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+                        el.className = "type-filter glass-card text-amber-100 text-xs font-bold px-4 py-2.5 rounded-xl whitespace-nowrap cursor-pointer hover:bg-white/10 transition-all";
                     });
-                    e.target.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
-                    e.target.classList.add('bg-orange-600', 'text-white', 'border-orange-600', 'shadow-md', 'shadow-orange-500/20');
-                    
+                    e.target.className = "type-filter bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl whitespace-nowrap shadow-[0_0_15px_rgba(245,158,11,0.4)] cursor-pointer transition-all border border-orange-400";
                     currentTypeFilter = typeVal;
                     renderFilteredDansals();
                 });
             }
         }
 
-        // Get My Location Feature (GPS)
+        // Location Detection Feature
         document.getElementById('btn-getLoc').addEventListener('click', () => {
             const btn = document.getElementById('btn-getLoc');
             const originalHTML = btn.innerHTML;
             
             if (navigator.geolocation) {
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-base"></i> Hoyanawa... (Wait)';
-                btn.classList.add('opacity-80', 'cursor-not-allowed');
+                btn.innerHTML = '<i class="fa-solid fa-satellite fa-spin text-lg"></i> Connecting GPS...';
                 
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         newDansalLat = position.coords.latitude; 
                         newDansalLng = position.coords.longitude;
                         
-                        regMap.setView([newDansalLat, newDansalLng], 16);
+                        regMap.setView([newDansalLat, newDansalLng], 15);
                         if(regMarkerLayer) regMap.removeLayer(regMarkerLayer);
                         
-                        const selectedType = document.getElementById('dType').value;
-                        regMarkerLayer = L.marker([newDansalLat, newDansalLng], { icon: createCustomMarkerIcon(selectedType) }).addTo(regMap);
+                        regMarkerLayer = L.marker([newDansalLat, newDansalLng], { icon: createCustomMarkerIcon(document.getElementById('dType').value) }).addTo(regMap);
                         
                         document.getElementById('locationError').classList.add('hidden');
                         const coordsText = document.getElementById('selectedCoords');
                         coordsText.classList.remove('hidden');
-                        coordsText.innerText = `✓ Location Linked! Lat: ${newDansalLat.toFixed(4)}, Lng: ${newDansalLng.toFixed(4)}`;
+                        coordsText.innerHTML = `<i class="fa-solid fa-street-view"></i> Location Locked! Lat: ${newDansalLat.toFixed(4)}, Lng: ${newDansalLng.toFixed(4)}`;
                         
                         btn.innerHTML = originalHTML;
-                        btn.classList.remove('opacity-80', 'cursor-not-allowed');
-                        showToast("Location captured successfully!");
+                        showToast("Location locked successfully!");
                     },
                     (error) => {
                         console.error(error);
-                        showToast("Location ganna bari una. Map eke click karanna.", true);
+                        showToast("Failed to get GPS. Please click on the map.", true);
                         btn.innerHTML = originalHTML;
-                        btn.classList.remove('opacity-80', 'cursor-not-allowed');
                     },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             } else {
-                showToast("Browser eka location support karanne na.", true);
+                showToast("Browser does not support GPS.", true);
             }
-        });
-
-        // Mock Data Filler for Testing
-        document.getElementById('btn-fillMock')?.addEventListener('click', () => {
-            document.getElementById('dName').value = "Test Ice Cream Dansala";
-            document.getElementById('dCity').value = "Nittambuwa";
-            document.getElementById('dType').value = "Ice Cream";
-            document.getElementById('dTime').value = "18:00";
-            showToast("Demo Data Filled!");
         });
 
         async function setupFirebase() {
@@ -410,9 +585,16 @@
                 const app = initializeApp(myOwnFirebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) { currentUserUid = user.uid; }
+                });
                 await signInAnonymously(auth);
+
                 document.getElementById('statusText').innerText = "Live Connected";
-                document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse";
+                document.getElementById('statusText').classList.replace("text-amber-100", "text-emerald-300");
+                document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse";
+                
                 onSnapshot(collection(db, 'dansals'), (snapshot) => {
                     allDansalData = [];
                     snapshot.forEach(doc => allDansalData.push({ id: doc.id, ...doc.data() }));
@@ -420,30 +602,53 @@
                 });
             } catch (error) {
                 console.error(error);
-                useLocalMemory = true;
-                // Disconnected text and red color style applied for better understanding
-                document.getElementById('statusText').innerText = "Disconnected";
-                document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                document.getElementById('statusText').innerText = "Offline Mode";
+                document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]";
+                showToast("Network Error: Could not connect to Database.", true);
             }
         }
 
         document.getElementById('dansalForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if(newDansalLat === null) { showToast("Select location!", true); return; }
-            await addDoc(collection(db, 'dansals'), {
-                name: document.getElementById('dName').value,
-                city: document.getElementById('dCity').value,
-                type: document.getElementById('dType').value,
-                time: document.getElementById('dTime').value,
-                status: document.getElementById('dStatus').value,
-                lat: newDansalLat, lng: newDansalLng
-            });
-            showToast("Registered!");
-            this.reset();
-            window.switchTab('mapTab');
+            if(newDansalLat === null) { 
+                document.getElementById('locationError').classList.remove('hidden');
+                showToast("Please select the location on the map!", true); 
+                return; 
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            
+            try {
+                await addDoc(collection(db, 'dansals'), {
+                    name: document.getElementById('dName').value,
+                    city: document.getElementById('dCity').value,
+                    type: document.getElementById('dType').value,
+                    time: document.getElementById('dTime').value,
+                    status: document.getElementById('dStatus').value,
+                    lat: newDansalLat, lng: newDansalLng,
+                    createdBy: currentUserUid,
+                    createdAt: new Date().toISOString()
+                });
+                showToast("Dansala Successfully Registered!");
+                this.reset();
+                newDansalLat = null; newDansalLng = null;
+                document.getElementById('selectedCoords').classList.add('hidden');
+                if(regMarkerLayer) regMap.removeLayer(regMarkerLayer);
+                setTimeout(() => switchTab('mapTab'), 500);
+            } catch (err) {
+                console.error(err);
+                showToast("Error saving data. Check connection.", true);
+            }
+            submitBtn.innerHTML = originalBtnText;
         });
 
-        window.onload = () => { initViewMap(); setupFirebase(); };
+        // Initialize App
+        window.onload = () => { 
+            initViewMap(); 
+            setupFirebase(); 
+        };
     </script>
 </body>
 </html>
