@@ -19,11 +19,12 @@
         
         /* Custom Notification Toast */
         #toast {
-            visibility: hidden; min-width: 300px; background-color: #333; color: #fff; text-align: center;
+            visibility: hidden; min-width: 320px; max-width: 90%; background-color: #333; color: #fff; text-align: center;
             border-radius: 16px; padding: 16px; position: fixed; z-index: 9999; left: 50%;
-            transform: translateX(-50%); bottom: 30px; font-size: 14px; font-weight: 600;
+            transform: translateX(-50%); bottom: 30px; font-size: 13px; font-weight: 600;
             transition: visibility 0.4s, opacity 0.4s linear; opacity: 0;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            line-height: 1.5;
         }
         #toast.show { visibility: visible; opacity: 1; }
 
@@ -118,7 +119,6 @@
             
             <!-- Type Filters -->
             <div class="flex gap-2 overflow-x-auto py-1 scrollbar-hide" id="typeFilters">
-                <!-- Dynamically generated or interactive type pills -->
                 <span id="filter-all" class="type-filter bg-orange-600 text-white text-xs font-extrabold px-4 py-2.5 rounded-full whitespace-nowrap border border-orange-600 cursor-pointer shadow-md shadow-orange-500/20 transition-all">All Types</span>
                 <span id="filter-rice" class="type-filter bg-white text-slate-700 text-xs font-bold px-4 py-2.5 rounded-full whitespace-nowrap border border-slate-200 cursor-pointer hover:bg-slate-100 transition-all">🍚 Bath (Rice)</span>
                 <span id="filter-ice" class="type-filter bg-white text-slate-700 text-xs font-bold px-4 py-2.5 rounded-full whitespace-nowrap border border-slate-200 cursor-pointer hover:bg-slate-100 transition-all">🍦 Ice Cream</span>
@@ -268,10 +268,18 @@
     <!-- Firebase SDK Modules -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Predefined coordinates for Sri Lanka major cities (districts 25ma)
+        const myOwnFirebaseConfig = {
+            apiKey: "AIzaSyByzmmLfW3SflXIdv7pM27Ja72ITQK4bM8",
+            authDomain: "poson-dansal.firebaseapp.com",
+            projectId: "poson-dansal",
+            storageBucket: "poson-dansal.firebasestorage.app",
+            messagingSenderId: "930299500096",
+            appId: "1:930299500096:web:1a1393d826ccb6fb06b1a5"
+        };
+
         const cityCoordinates = {
             "All": { lat: 7.8731, lng: 80.7718, zoom: 7.5 },
             "Colombo": { lat: 6.9271, lng: 79.8612, zoom: 12.5 },
@@ -301,491 +309,124 @@
             "Mullaitivu": { lat: 9.2863, lng: 80.8143, zoom: 12.5 }
         };
 
-        let viewMap;
-        let regMap;
-        let viewMarkers = [];
-        let regMarkerLayer = null;
-        
-        let allDansalData = [];
-        let currentTypeFilter = 'All';
-        
-        let newDansalLat = null;
-        let newDansalLng = null;
-        
-        let db;
-        let auth;
-        let isPlatformSandbox = false;
-        let appId = 'dansel-project';
+        let viewMap, regMap, viewMarkers = [], regMarkerLayer = null, allDansalData = [], currentTypeFilter = 'All', newDansalLat = null, newDansalLng = null, db, auth, useLocalMemory = false;
 
-        // Custom Toast Notification Function (replaces standard alerts)
         function showToast(message, isError = false) {
             const toast = document.getElementById("toast");
             toast.innerText = message;
             toast.style.backgroundColor = isError ? "#ef4444" : "#10b981";
             toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3500);
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 4500);
         }
 
-        // Generate customized modern Map markers with colored SVGs and Emojis
         function createCustomMarkerIcon(type) {
-            let color = "#ef4444"; // Default
-            let emoji = "🏮";
+            let color = "#ef4444", emoji = "🏮";
             if (type === "Bath (Rice)") { color = "#f97316"; emoji = "🍚"; }
             else if (type === "Ice Cream") { color = "#ec4899"; emoji = "🍦"; }
             else if (type === "Cool Drinks") { color = "#06b6d4"; emoji = "🍹"; }
             else if (type === "Kadala") { color = "#eab308"; emoji = "🍲"; }
-
-            return L.divIcon({
-                html: `
-                    <div class="flex flex-col items-center justify-center">
-                        <div class="w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 border-white text-base transform hover:scale-110 transition-all duration-200" style="background-color: ${color};">
-                            ${emoji}
-                        </div>
-                        <div class="w-3.5 h-3.5 transform rotate-45 -mt-1.5 shadow-md" style="background-color: ${color}; border-right: 1px solid white; border-bottom: 1px solid white;"></div>
-                    </div>
-                `,
-                className: 'custom-div-icon',
-                iconSize: [36, 46],
-                iconAnchor: [18, 46],
-                popupAnchor: [0, -42]
-            });
+            return L.divIcon({ html: `<div class="flex flex-col items-center justify-center"><div class="w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 border-white text-base transform hover:scale-110 transition-all duration-200" style="background-color: ${color};">${emoji}</div><div class="w-3.5 h-3.5 transform rotate-45 -mt-1.5 shadow-md" style="background-color: ${color};"></div></div>`, className: 'custom-div-icon', iconSize: [36, 46], iconAnchor: [18, 46], popupAnchor: [0, -42] });
         }
 
-        // Initialize Main View Map
         function initViewMap() {
             if(!viewMap) {
                 viewMap = L.map('mainMap', { scrollWheelZoom: true }).setView([7.8731, 80.7718], 7.5);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
-                }).addTo(viewMap);
+                L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=si&gl=LK', { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '© Google Maps' }).addTo(viewMap);
                 document.getElementById('mapLoading').style.display = 'none';
             }
         }
 
-        // Initialize Registration Map
         function initRegMap() {
             if(!regMap) {
                 regMap = L.map('regMap').setView([6.9271, 79.8612], 12);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19
-                }).addTo(regMap);
-
+                L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=si&gl=LK', { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '© Google Maps' }).addTo(regMap);
                 regMap.on('click', function(e) {
-                    newDansalLat = e.latlng.lat;
-                    newDansalLng = e.latlng.lng;
-                    
+                    newDansalLat = e.latlng.lat; newDansalLng = e.latlng.lng;
                     if(regMarkerLayer) regMap.removeLayer(regMarkerLayer);
-                    
-                    regMarkerLayer = L.marker([newDansalLat, newDansalLng], {
-                        icon: createCustomMarkerIcon(document.getElementById('dType').value)
-                    }).addTo(regMap);
-                    
+                    regMarkerLayer = L.marker([newDansalLat, newDansalLng], { icon: createCustomMarkerIcon(document.getElementById('dType').value) }).addTo(regMap);
                     document.getElementById('locationError').classList.add('hidden');
                     const coordsText = document.getElementById('selectedCoords');
                     coordsText.classList.remove('hidden');
                     coordsText.innerText = `✓ Target Selected: Lat ${newDansalLat.toFixed(5)}, Lng ${newDansalLng.toFixed(5)}`;
                 });
             }
-            
-            // Adjust Leaflet layout sizing to fix background rendering bug
-            setTimeout(() => {
-                regMap.invalidateSize();
-                const selectedCity = document.getElementById('dCity').value;
-                if(cityCoordinates[selectedCity] && !newDansalLat) {
-                    regMap.setView([cityCoordinates[selectedCity].lat, cityCoordinates[selectedCity].lng], cityCoordinates[selectedCity].zoom);
-                }
-            }, 250);
+            setTimeout(() => regMap.invalidateSize(), 250);
         }
 
-        // Filter and Render live Dansals
         function renderFilteredDansals() {
             const selectedCity = document.getElementById('filterCity').value;
             const listContainer = document.getElementById('dansalList');
-            
-            // Wipe existing map markers
             viewMarkers.forEach(m => viewMap.removeLayer(m));
             viewMarkers = [];
             listContainer.innerHTML = '';
-
-            // Apply criteria
-            let filtered = allDansalData;
-            if(selectedCity !== 'All') {
-                filtered = filtered.filter(d => d.city === selectedCity);
-            }
-            if(currentTypeFilter !== 'All') {
-                filtered = filtered.filter(d => d.type === currentTypeFilter);
-            }
+            let filtered = allDansalData.filter(d => (selectedCity === 'All' || d.city === selectedCity) && (currentTypeFilter === 'All' || d.type === currentTypeFilter));
 
             if(filtered.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                        <span class="text-3xl block mb-2">🔍</span>
-                        <p class="text-sm text-slate-500 font-bold">No active dansals found for current filter.</p>
-                    </div>
-                `;
+                listContainer.innerHTML = `<div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200"><span class="text-3xl block mb-2">🔍</span><p class="text-sm text-slate-500 font-bold">No active dansals found for current filter.</p></div>`;
                 return;
             }
 
-            // Draw Markers on Map & populate Cards
             filtered.forEach(d => {
                 if(d.lat && d.lng) {
-                    const customIcon = createCustomMarkerIcon(d.type);
-                    const marker = L.marker([d.lat, d.lng], { icon: customIcon }).addTo(viewMap)
-                        .bindPopup(`
-                            <div class="p-1 font-sans">
-                                <b class="text-orange-600 block text-sm">${d.name}</b>
-                                <span class="text-[11px] text-slate-500 block mb-1">📍 ${d.city}</span>
-                                <div class="text-[10px] font-bold bg-orange-50 text-orange-700 px-2 py-0.5 rounded inline-block mt-1">${d.type}</div>
-                                <div class="text-xs mt-1">⏰ <b>Time:</b> ${d.time}</div>
-                                <div class="text-xs mt-0.5">🚦 <b>Status:</b> ${d.status}</div>
-                            </div>
-                        `);
+                    const marker = L.marker([d.lat, d.lng], { icon: createCustomMarkerIcon(d.type) }).addTo(viewMap).bindPopup(`<b class="text-orange-600 text-sm">${d.name}</b><div class="text-xs">⏰ ${d.time}</div>`);
                     viewMarkers.push(marker);
                 }
-
-                let statusClass = 'text-emerald-700 bg-emerald-50 border-emerald-200';
-                if(d.status === 'Crowded') statusClass = 'text-red-700 bg-red-50 border-red-200';
-                if(d.status === 'Finished') statusClass = 'text-slate-600 bg-slate-50 border-slate-200';
-                if(d.status === 'Starting Soon') statusClass = 'text-amber-700 bg-amber-50 border-amber-200';
-                
                 const itemDiv = document.createElement('div');
-                itemDiv.className = "border border-slate-100 p-4 rounded-2xl flex flex-col gap-3 bg-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:border-orange-200";
-                itemDiv.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-extrabold text-slate-800 text-sm leading-tight">${d.name}</h3>
-                            <p class="text-[11px] text-slate-500 font-bold mt-0.5"><i class="fa-solid fa-location-dot"></i> ${d.city}</p>
-                        </div>
-                        <span class="${statusClass} text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border">${d.status}</span>
-                    </div>
-                    <div class="flex justify-between items-center pt-2.5 border-t border-slate-50">
-                        <span class="text-xs font-bold text-slate-700 flex items-center gap-1">🍽️ ${d.type}</span>
-                        <span class="text-xs text-slate-600 font-bold flex items-center gap-1">⏰ Start: ${d.time}</span>
-                    </div>
-                `;
-                
-                // Add event listener programmatically rather than inline to avoid module reference issues
-                itemDiv.addEventListener('click', () => {
-                    window.focusOnMap(d.lat, d.lng);
-                });
-
+                itemDiv.className = "border border-slate-100 p-4 rounded-2xl flex flex-col gap-3 bg-white shadow-sm hover:shadow-md transition-all";
+                itemDiv.innerHTML = `<div class="flex justify-between items-start"><div><h3 class="font-extrabold text-slate-800 text-sm">${d.name}</h3><p class="text-[11px] text-slate-500 font-bold"><i class="fa-solid fa-location-dot"></i> ${d.city}</p></div><span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase border">${d.status}</span></div>`;
+                itemDiv.addEventListener('click', () => { viewMap.setView([d.lat, d.lng], 15); });
                 listContainer.appendChild(itemDiv);
             });
         }
 
-        // Focus on a specific marker location on map
-        window.focusOnMap = function(lat, lng) {
-            if(viewMap && lat && lng) {
-                viewMap.setView([lat, lng], 15);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                // Automatically open matching popup marker
-                viewMarkers.forEach(marker => {
-                    const mLat = marker.getLatLng().lat;
-                    const mLng = marker.getLatLng().lng;
-                    if(Math.abs(mLat - lat) < 0.0001 && Math.abs(mLng - lng) < 0.0001) {
-                        marker.openPopup();
-                    }
-                });
-            }
-        }
-
-        // Dynamic Event Handlers linked directly to Window to prevent Module Error
-        document.getElementById('filterCity').addEventListener('change', (e) => {
-            const city = e.target.value;
-            const coords = cityCoordinates[city];
-            if(coords) {
-                viewMap.setView([coords.lat, coords.lng], coords.zoom);
-            }
-            renderFilteredDansals();
-        });
-
-        document.getElementById('dCity').addEventListener('change', (e) => {
-            const city = e.target.value;
-            if(regMap && cityCoordinates[city] && !newDansalLat) {
-                regMap.setView([cityCoordinates[city].lat, cityCoordinates[city].lng], cityCoordinates[city].zoom);
-            }
-        });
-
-        document.getElementById('dType').addEventListener('change', (e) => {
-            if (regMarkerLayer && newDansalLat && newDansalLng) {
-                regMap.removeLayer(regMarkerLayer);
-                regMarkerLayer = L.marker([newDansalLat, newDansalLng], {
-                    icon: createCustomMarkerIcon(e.target.value)
-                }).addTo(regMap);
-            }
-        });
-
-        // Set up tab clicking logic securely
         window.switchTab = function(tabId) {
-            document.getElementById('mapTab').classList.add('hidden');
-            document.getElementById('regTab').classList.add('hidden');
-            document.getElementById('btn-mapTab').className = "flex-1 py-4 text-center font-bold text-sm text-slate-500 transition-all duration-200 flex items-center justify-center gap-2";
-            document.getElementById('btn-regTab').className = "flex-1 py-4 text-center font-bold text-sm text-slate-500 transition-all duration-200 flex items-center justify-center gap-2";
-
+            document.getElementById('mapTab').classList.add('hidden'); document.getElementById('regTab').classList.add('hidden');
             document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById('btn-' + tabId).className = "flex-1 py-4 text-center font-bold text-sm tab-active transition-all duration-200 flex items-center justify-center gap-2";
-            
-            if(tabId === 'regTab') {
-                initRegMap();
-            } else {
-                setTimeout(() => { if(viewMap) viewMap.invalidateSize(); }, 120); 
-            }
+            if(tabId === 'regTab') initRegMap();
         }
 
-        // Attach to DOM buttons explicitly to resolve Module scope run errors
         document.getElementById('btn-mapTab').addEventListener('click', () => window.switchTab('mapTab'));
         document.getElementById('btn-regTab').addEventListener('click', () => window.switchTab('regTab'));
 
-        // Handle search filter pill selections
-        window.filterByType = function(type, elementId) {
-            currentTypeFilter = type;
-            const buttons = document.querySelectorAll('.type-filter');
-            buttons.forEach(btn => {
-                btn.className = "type-filter bg-white text-slate-700 text-xs font-bold px-4 py-2.5 rounded-full whitespace-nowrap border border-slate-200/60 cursor-pointer hover:bg-slate-100 transition-all";
-            });
-            
-            document.getElementById(elementId).className = "type-filter bg-orange-600 text-white text-xs font-extrabold px-4 py-2.5 rounded-full whitespace-nowrap border border-orange-600 cursor-pointer shadow-md shadow-orange-500/20 transition-all";
-            renderFilteredDansals();
-        }
-
-        document.getElementById('filter-all').addEventListener('click', () => window.filterByType('All', 'filter-all'));
-        document.getElementById('filter-rice').addEventListener('click', () => window.filterByType('Bath (Rice)', 'filter-rice'));
-        document.getElementById('filter-ice').addEventListener('click', () => window.filterByType('Ice Cream', 'filter-ice'));
-        document.getElementById('filter-drinks').addEventListener('click', () => window.filterByType('Cool Drinks', 'filter-drinks'));
-        document.getElementById('filter-kadala').addEventListener('click', () => window.filterByType('Kadala', 'filter-kadala'));
-
-        // Auto Generator testing tool
-        window.fillMockData = function() {
-            const sampleNames = [
-                "Sri Bodhiraja Maha Poson Rice Dansala",
-                "Kandy Town Ice Cream Feast",
-                "Anuradhapura Sacred Area Juice Palace",
-                "Gampaha Maniokka Dansala",
-                "Ruwanweli Seya Alms Giving",
-                "Colombo Youth Tea Spot"
-            ];
-            const sampleTypes = ["Bath (Rice)", "Ice Cream", "Cool Drinks", "Kadala", "Other"];
-            const sampleCities = ["Anuradhapura", "Colombo", "Kandy", "Gampaha", "Kurunegala", "Galle", "Trincomalee", "Jaffna"];
-            const sampleStatus = ["Available", "Crowded", "Starting Soon"];
-
-            const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
-            const randomType = sampleTypes[Math.floor(Math.random() * sampleTypes.length)];
-            const randomCity = sampleCities[Math.floor(Math.random() * sampleCities.length)];
-            const randomStatus = sampleStatus[Math.floor(Math.random() * sampleStatus.length)];
-
-            document.getElementById('dName').value = randomName;
-            document.getElementById('dType').value = randomType;
-            document.getElementById('dCity').value = randomCity;
-            document.getElementById('dStatus').value = randomStatus;
-            
-            const now = new Date();
-            const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            document.getElementById('dTime').value = timeString;
-
-            const cityCoords = cityCoordinates[randomCity] || cityCoordinates["Colombo"];
-            if(regMap) {
-                const offsetLat = (Math.random() - 0.5) * 0.02;
-                const offsetLng = (Math.random() - 0.5) * 0.02;
-                newDansalLat = cityCoords.lat + offsetLat;
-                newDansalLng = cityCoords.lng + offsetLng;
-
-                regMap.setView([newDansalLat, newDansalLng], 14);
-
-                if(regMarkerLayer) regMap.removeLayer(regMarkerLayer);
-                regMarkerLayer = L.marker([newDansalLat, newDansalLng], {
-                    icon: createCustomMarkerIcon(randomType)
-                }).addTo(regMap);
-
-                document.getElementById('locationError').classList.add('hidden');
-                const coordsText = document.getElementById('selectedCoords');
-                coordsText.classList.remove('hidden');
-                coordsText.innerText = `✓ Demo point set near: ${randomCity}`;
-            }
-
-            showToast("✨ Demo values generated successfully!");
-        }
-
-        document.getElementById('btn-fillMock').addEventListener('click', window.fillMockData);
-
-        // Fetch User GPS Geo location
-        window.getCurrentLocation = function() {
-            if (navigator.geolocation) {
-                showToast("📍 Oyage GPS location eka balanawa...", false);
-                
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        newDansalLat = position.coords.latitude;
-                        newDansalLng = position.coords.longitude;
-                        
-                        if (regMarkerLayer) regMap.removeLayer(regMarkerLayer);
-                        
-                        regMarkerLayer = L.marker([newDansalLat, newDansalLng], {
-                            icon: createCustomMarkerIcon(document.getElementById('dType').value)
-                        }).addTo(regMap);
-                        
-                        regMap.flyTo([newDansalLat, newDansalLng], 16);
-                        
-                        document.getElementById('locationError').classList.add('hidden');
-                        const coordsText = document.getElementById('selectedCoords');
-                        coordsText.classList.remove('hidden');
-                        coordsText.innerText = `✓ GPS Locked Successfully!`;
-                        
-                        showToast("✅ Auto Location eka labuna!");
-                    },
-                    (error) => {
-                        console.error("Location retrieval failure: ", error);
-                        showToast("🛑 Geolocation failed! Block karala naththan GPS settings check karanna.", true);
-                    },
-                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-                );
-            } else {
-                showToast("🛑 GPS functionality matches no browser support", true);
-            }
-        };
-
-        document.getElementById('btn-getLoc').addEventListener('click', window.getCurrentLocation);
-
-        // Firebase Initializer and Dynamic Listener Setup
         async function setupFirebase() {
-            let firebaseConfig;
-
-            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                firebaseConfig = JSON.parse(__firebase_config);
-                isPlatformSandbox = true;
-                appId = typeof __app_id !== 'undefined' ? __app_id : 'dansel-project';
-            } else {
-                firebaseConfig = {
-                    apiKey: "AIzaSyAK9S0v_rCq1noY83QRBiR9nlbxKP7DqFs",
-                    authDomain: "dansel-project.firebaseapp.com",
-                    projectId: "dansel-project",
-                    storageBucket: "dansel-project.firebasestorage.app",
-                    messagingSenderId: "659130526345",
-                    appId: "1:659130526345:web:873ab94de6bd102e9fb458",
-                    measurementId: "G-KQG8K562YY"
-                };
-            }
-
             try {
-                const app = initializeApp(firebaseConfig);
+                const app = initializeApp(myOwnFirebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-
-                let user;
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    user = await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    user = await signInAnonymously(auth);
-                }
-
-                if (user) {
-                    document.getElementById('statusText').innerText = "Live Connected";
-                    document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse";
-                    
-                    let targetCollection;
-                    if (isPlatformSandbox) {
-                        targetCollection = collection(db, 'artifacts', appId, 'public', 'data', 'dansals');
-                    } else {
-                        targetCollection = collection(db, 'dansals');
-                    }
-
-                    // Secure real-time Firestore database synchronization
-                    onSnapshot(targetCollection, (snapshot) => {
-                        allDansalData = [];
-                        snapshot.forEach((doc) => {
-                            allDansalData.push({ id: doc.id, ...doc.data() });
-                        });
-                        
-                        renderFilteredDansals();
-                        
-                        // Live update flashing indicator
-                        const liveTag = document.getElementById('liveTag');
-                        liveTag.classList.remove('bg-red-50', 'text-red-600');
-                        liveTag.classList.add('bg-green-600', 'text-white');
-                        setTimeout(() => {
-                            liveTag.classList.remove('bg-green-600', 'text-white');
-                            liveTag.classList.add('bg-red-50', 'text-red-600');
-                        }, 800);
-
-                    }, (error) => {
-                        console.error("Firestore database subscription error: ", error);
-                        showToast("Subscription error, reloading data...", true);
-                    });
-                }
-
+                await signInAnonymously(auth);
+                document.getElementById('statusText').innerText = "Live Connected";
+                document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse";
+                onSnapshot(collection(db, 'dansals'), (snapshot) => {
+                    allDansalData = [];
+                    snapshot.forEach(doc => allDansalData.push({ id: doc.id, ...doc.data() }));
+                    renderFilteredDansals();
+                });
             } catch (error) {
-                console.error("Firebase startup failure: ", error);
+                console.error(error);
+                useLocalMemory = true;
+                // Disconnected text and red color style applied for better understanding
                 document.getElementById('statusText').innerText = "Disconnected";
-                document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-none";
-                showToast("Connection to secure sandbox failed", true);
+                document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-red-500";
             }
         }
 
-        // Form Submit handler
         document.getElementById('dansalForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            if(newDansalLat === null || newDansalLng === null) {
-                document.getElementById('locationError').classList.remove('hidden');
-                showToast("Karunakarala location eka select karanna!", true);
-                return;
-            }
-
-            const btn = document.getElementById('submitBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = "<i class='fa-solid fa-spinner animate-spin'></i> Saving Dansala...";
-            btn.disabled = true;
-            
-            const newDansal = {
+            if(newDansalLat === null) { showToast("Select location!", true); return; }
+            await addDoc(collection(db, 'dansals'), {
                 name: document.getElementById('dName').value,
                 city: document.getElementById('dCity').value,
                 type: document.getElementById('dType').value,
                 time: document.getElementById('dTime').value,
                 status: document.getElementById('dStatus').value,
-                lat: newDansalLat, 
-                lng: newDansalLng,
-                timestamp: new Date().toISOString()
-            };
-
-            try {
-                let targetCollection;
-                if (isPlatformSandbox) {
-                    targetCollection = collection(db, 'artifacts', appId, 'public', 'data', 'dansals');
-                } else {
-                    targetCollection = collection(db, 'dansals');
-                }
-
-                await addDoc(targetCollection, newDansal);
-                showToast("🎉 Dansala Successful mada Register kala!");
-                
-                // Clear fields
-                this.reset();
-                newDansalLat = null;
-                newDansalLng = null;
-                if(regMarkerLayer) regMap.removeLayer(regMarkerLayer);
-                document.getElementById('selectedCoords').classList.add('hidden');
-                
-                // Return to find view
-                window.switchTab('mapTab');
-                
-                // Force refocus to saved item
-                document.getElementById('filterCity').value = newDansal.city;
-                document.getElementById('filterCity').dispatchEvent(new Event('change'));
-
-            } catch (error) {
-                console.error("Firebase Database write error: ", error);
-                showToast("Ehemath save karanna bari una. Connection check karanna.", true);
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+                lat: newDansalLat, lng: newDansalLng
+            });
+            showToast("Registered!");
+            this.reset();
+            window.switchTab('mapTab');
         });
 
-        // Initialize App on load
-        window.onload = () => {
-            initViewMap();
-            setupFirebase();
-        };
+        window.onload = () => { initViewMap(); setupFirebase(); };
     </script>
 </body>
 </html>
